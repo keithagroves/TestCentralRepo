@@ -13,7 +13,44 @@
 #BEGIN SCRIPT
 
 
-#Step 1: pull from Central
+
+
+git checkout development;
+#Step 1: check for new repos
+echo "checking for new repos"
+git pull
+#Step 2: Search through RepoList
+while read in; do
+    repoName=$(basename "$in" ".${in##*.}")
+    #If the Repo doesn't exist check github
+    if [ ! -d "$repoName" ]
+    then
+	echo "$repoName is not in Central"
+	echo "Checking github"
+	git clone $in
+#	git add ${repoName}
+    fi
+
+    if [ -d "$repoName" ]
+    then
+	echo "Removing .git"
+	cd $repoName
+	rm -rf .git
+	cd ..
+    fi
+
+done < RepoList.txt
+
+#Step 3: Update Central
+echo "Updating Central"
+git add -A
+git commit -m "Automatic Update"
+git push
+echo "Finished"
+
+git checkout main
+
+#Step 3: pull from Central
 echo "Pulling from Central"
 git pull
 
@@ -53,9 +90,4 @@ while read in; do
     fi
 done < RepoList.txt
 
-#Step 3: Update Central
-echo "Updating Central"
-git add -A
-git commit -m "Automatic Update"
-git push
-echo "Finished"
+
